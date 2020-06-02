@@ -9,14 +9,17 @@
     <script type="text/javascript" src="draw.js" defer></script>
     <link rel="icon" href="https://img.icons8.com/ios-filled/50/000000/paint-palette.png">
   </head>
-  <body class="">
+  <body class="bg-secondary">
     <h1 class="text-center text-white">Mandala Maker</h1>
-    <div class="container text-center mb-4" id="controls">
-      <div class="slide-container text-center">
-        <input type="range" min="2" max="100" value="5" class="slider" id="thickness" onchange="updateThickness(this.value)">
+    <div class="container text-center text-white m-0" id="controls">
+      <div class="slide-container text-center form-group form-group-inline">
+        <label for="thickness">Thickness</label>
+        <input type="range" min="2" max="50" value="8" class="slider" id="thickness" onchange="updateThickness(this.value)">
       </div>
-      <button class="btn btn-outline-primary" onclick="clearCanvas()">Clear Canvas</button>
-      <div id="rgbColorPicker">
+      <div class="form-group">
+        <button class="btn btn-primary" onclick="clearCanvas()">Clear Canvas</button>
+      </div>
+      <div id="rgbColorPicker" class="form-group">
         <div class="slide-container">
           <input type="range" min="0" max="255" value="0" class="slider" id="color" onchange="updateColor(this.value, 'r')">
         </div>
@@ -27,11 +30,15 @@
           <input type="range" min="0" max="255" value="0" class="slider" id="color" onchange="updateColor(this.value, 'b')">
         </div>
         <input id="hex-input" maxlength="7" onfocusout="updateColor(this.value)" type="text" value="#000000">
+
+      </div>
+      <div class="form-group">
+        <label for="sides">Sides</label>
         <input id="sides" type="range" min="1" max="8" value="1" onchange="updateSides(this.value)">
       </div>
     </div>
-    <div class="text-center">
-      <canvas id="canvas"></canvas>
+    <div class="row">
+      <canvas class="bg-white col-10 offset-1" id="canvas"></canvas>
     </div>
   </body>
 </html>

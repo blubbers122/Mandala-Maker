@@ -2,12 +2,18 @@
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d");
 let drawing = false;
-var thickness = 1
+var thickness = 8
 var color = "#000000"
 var sides = 1
+var lines = [[],[],[],[]]
 
-canvas.height = canvas.offsetHeight
-canvas.width = canvas.offsetWidth
+window.onresize = updateCanvasDimensions
+
+function updateCanvasDimensions() {
+
+  canvas.height = canvas.offsetHeight
+  canvas.width = canvas.offsetWidth
+}
 
 function updateThickness(newThickness) {
   thickness = newThickness
@@ -43,41 +49,65 @@ function clearCanvas(){
 
 function startPosition(e){
   drawing = true;
+  // firstLine.push([e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop])
+  // secondLine.push([canvas.width - e.clientX + canvas.offsetLeft, e.clientY - canvas.offsetTop])
+  // thirdLine.push([e.clientX - canvas.offsetLeft, canvas.height - e.clientY + canvas.offsetTop])
+  // fourthLine.push([canvas.width - e.clientX + canvas.offsetLeft, canvas.height - e.clientY + canvas.offsetTop])
+  lines.forEach((line, i) => {
+    sides < 3 ? line.push(oneOrTwoSides(i, e.clientX, e.clientY)) : line.push(ThreeOrMoreSides(i, e.clientX, e.clientY))
+  });
   draw(e);
 }
 
 function finishedPosition(){
   drawing = false
   ctx.beginPath();
+  lines = [[],[],[],[]]
+  console.log(lines)
 }
+
+// make dict of functions to return x or y value based on index and sides
+
+function oneOrTwoSides(i, xPos, yPos) {
+  if (i == 0 || i == 2) {
+    var x = xPos - canvas.offsetLeft
+  }
+  else {
+    var x = canvas.width - xPos + canvas.offsetLeft
+  }
+  if (i == 0 || i == 1) {
+    var y = yPos - canvas.offsetTop
+  }
+  else {
+    var y = canvas.height - yPos + canvas.offsetTop
+  }
+  return [x,y]
+}
+
+function ThreeOrMoreSides(i, xPos, yPos) {
+
+}
+
 
 function draw(e) {
   if (!drawing) return;
-  var lines = []
 
   ctx.lineWidth = thickness
   ctx.strokeStyle = color
   ctx.lineCap = "round";
-  for (i = 0; i < sides; i++) {
-    if (i == 0) {
-      var x = e.clientX - canvas.offsetLeft
-      var y = e.clientY - canvas.offsetTop
-    }
-    else {
-      var x = canvas.width - e.clientX + canvas.offsetLeft
-      var y = canvas.height - e.clientY + canvas.offsetTop
-      ctx.moveTo()
-    }
 
-    ctx.lineTo(x, y);
+  for (i = 0; i < sides * 2; i++) {
+    var coords = oneOrTwoSides(i, e.clientX, e.clientY)
+    lines[i].push([coords[0], coords[1]])
+    ctx.moveTo(lines[i][lines[i].length-2][0], lines[i][lines[i].length-2][1])
+    ctx.lineTo(coords[0],coords[1])
     ctx.stroke();
-
-    ctx.moveTo(prevX, prevY)
   }
-
-
 }
 
 canvas.addEventListener("mousedown", startPosition)
 canvas.addEventListener("mouseup", finishedPosition)
+canvas.addEventListener("mouseleave", finishedPosition)
 canvas.addEventListener("mousemove", draw)
+
+updateCanvasDimensions()
