@@ -6,6 +6,8 @@ var thickness = 8
 var color = "#000000"
 var sides = 1
 var lines = [[],[],[],[]]
+var centerX = canvas.width / 2 + canvas.offsetLeft
+var centerY = canvas.height / 2 + canvas.offsetTop
 
 window.onresize = updateCanvasDimensions
 
@@ -13,6 +15,8 @@ function updateCanvasDimensions() {
 
   canvas.height = canvas.offsetHeight
   canvas.width = canvas.offsetWidth
+  centerX = canvas.width / 2 + canvas.offsetLeft
+  centerY = canvas.height / 2 + canvas.offsetTop
 }
 
 function updateThickness(newThickness) {
@@ -48,13 +52,9 @@ function clearCanvas(){
 }
 
 function startPosition(e){
-  drawing = true;
-  // firstLine.push([e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop])
-  // secondLine.push([canvas.width - e.clientX + canvas.offsetLeft, e.clientY - canvas.offsetTop])
-  // thirdLine.push([e.clientX - canvas.offsetLeft, canvas.height - e.clientY + canvas.offsetTop])
-  // fourthLine.push([canvas.width - e.clientX + canvas.offsetLeft, canvas.height - e.clientY + canvas.offsetTop])
+  drawing = true
   lines.forEach((line, i) => {
-    sides < 3 ? line.push(oneOrTwoSides(i, e.clientX, e.clientY)) : line.push(ThreeOrMoreSides(i, e.clientX, e.clientY))
+    sides < 3 ? line.push(oneOrTwoSides(i, e.clientX, e.clientY)) : line.push(threeOrMoreSides(i, angle, e.clientX, e.clientY))
   });
   draw(e);
 }
@@ -62,11 +62,8 @@ function startPosition(e){
 function finishedPosition(){
   drawing = false
   ctx.beginPath();
-  lines = [[],[],[],[]]
-  console.log(lines)
+  lines = [[],[],[],[],[],[],[],[]]
 }
-
-// make dict of functions to return x or y value based on index and sides
 
 function oneOrTwoSides(i, xPos, yPos) {
   if (i == 0 || i == 2) {
@@ -84,10 +81,38 @@ function oneOrTwoSides(i, xPos, yPos) {
   return [x,y]
 }
 
-function ThreeOrMoreSides(i, xPos, yPos) {
+function threeOrMoreSides(i, angle, xPos, yPos) {
+  var x, y
+  var distanceFromOrigin = Math.hypot(x, y)
+  x = distanceFromOrigin * Math.cos(angle) + centerX
+  y = distanceFromOrigin * Math.sin(angle) + centerY
+  console.log(distanceFromOrigin)
+
+  console.log(x)
+  console.log(y)
+  console.log(angle)
+  // coords of mouse
+  if (i == 0) {
+    x = xPos - centerX
+    y = yPos - centerY
+
+
+
+    return [xPos, yPos]
+  }
+  // coords of each rotation
+  else if (i < 4){
+    x = distanceFromOrigin * Math.cos(angle) + centerX
+    y = distanceFromOrigin * Math.sin(angle) + centerY
+    //change to return raw x and y
+    return [x, y]
+  }
+  else {
+    // for each reflection
+    return [0, 0]
+  }
 
 }
-
 
 function draw(e) {
   if (!drawing) return;
@@ -96,12 +121,30 @@ function draw(e) {
   ctx.strokeStyle = color
   ctx.lineCap = "round";
 
-  for (i = 0; i < sides * 2; i++) {
-    var coords = oneOrTwoSides(i, e.clientX, e.clientY)
-    lines[i].push([coords[0], coords[1]])
-    ctx.moveTo(lines[i][lines[i].length-2][0], lines[i][lines[i].length-2][1])
-    ctx.lineTo(coords[0],coords[1])
-    ctx.stroke();
+  var mouseX = e.clientX
+  var mouseY = e.clientY
+
+  if (sides < 3) {
+    for (let i = 0; i < sides * 2; i++) {
+      var coords = oneOrTwoSides(i, mouseX, mouseY)
+      lines[i].push([coords[0], coords[1]])
+      ctx.moveTo(lines[i][lines[i].length-2][0], lines[i][lines[i].length-2][1])
+      ctx.lineTo(coords[0],coords[1])
+      ctx.stroke();
+    }
+  }
+  else {
+    var angle = Math.atan((mouseY - centerY) / (mouseX - centerX))
+    console.log("angle is " + toString(angle))
+    var sliceSize = (360 / sides) * Math.pi/180
+    for (let i = 0; i < sides * 2; i++) {
+      var coords = threeOrMoreSides(i, angle, mouseX, mouseY)
+      lines[i].push([coords[0], coords[1]])
+      ctx.moveTo(lines[i][lines[i].length-2][0], lines[i][lines[i].length-2][1])
+      ctx.lineTo(coords[0],coords[1])
+      ctx.stroke();
+      angle += sliceSize
+    }
   }
 }
 
